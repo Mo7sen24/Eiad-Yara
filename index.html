@@ -5,6 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
 <title>Eiad &amp; Yara | Outing Invitation</title>
+
+<meta name="description" content="You are invited to an outing with Eiad &amp; Yara — November 15, 2026 at 9:00 PM, Room Art Space, The Spot Mall.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Eiad &amp; Yara">
+<meta property="og:title" content="Eiad &amp; Yara | Outing Invitation">
+<meta property="og:description" content="November 15, 2026 · 9:00 PM · Room Art Space, The Spot Mall">
+<meta property="og:url" content="https://eiad-yara.vercel.app">
+<meta property="og:image" content="https://eiad-yara.vercel.app/preview.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Eiad &amp; Yara outing invitation">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Eiad &amp; Yara | Outing Invitation">
+<meta name="twitter:description" content="November 15, 2026 · 9:00 PM · Room Art Space, The Spot Mall">
+<meta name="twitter:image" content="https://eiad-yara.vercel.app/preview.jpg">
     <link rel="icon" type="image/png" href="engagement-icon.png">
 
 <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -2387,7 +2403,7 @@ html.fp-on .fpw{display:block}
         id="rsvpForm"
         class="card rv"
         method="POST"
-        target="rsvpFrame"
+        novalidate
     >
 
         <label for="rsvpName">
@@ -2402,20 +2418,6 @@ html.fp-on .fpw{display:block}
             placeholder="Your name"
             autocomplete="name"
             required
-        >
-
-
-        <label for="rsvpEmail">
-            EMAIL (OPTIONAL)
-        </label>
-
-
-        <input
-            id="rsvpEmail"
-            name="email"
-            type="email"
-            placeholder="your@email.com"
-            autocomplete="email"
         >
 
 
@@ -2491,12 +2493,6 @@ html.fp-on .fpw{display:block}
     </form>
 
 
-    <iframe
-        name="rsvpFrame"
-        id="rsvpFrame"
-        style="display:none;"
-        title="RSVP submission"
-    ></iframe>
 
 </section>
 
@@ -2572,176 +2568,119 @@ const $$ = (s,e=document) => [...e.querySelectorAll(s)];
    RSVP - GOOGLE SHEETS
    ========================================================= */
 
-const RSVP_URL =
-"https://script.google_zFgxXWI4_EmzrBJf_n42WfVwRUX6rBr8H23MROsnw_Me9kYA74F62Rz3Fcev8vg/exec";
-
-
+const RSVP_URL = "https://script.google.com/macros/s/AKfycbxCT2nUjWMMDPhigsj7b2RTLpya7o5EaiNnARFKnvreuTxNqUt1v3v8KAlR-zEdAyFkOg/exec";
 const rsvpForm = $('#rsvpForm');
 const rsvpName = $('#rsvpName');
-const rsvpEmail = $('#rsvpEmail');
 const rsvpMessage = $('#rsvpMessage');
 const attendance = $('#attendance');
-
 const rsvpButton = $('#rsvpButton');
 const rsvpSuccess = $('#rsvpSuccess');
 const rsvpError = $('#rsvpError');
-
-const rsvpFrame = $('#rsvpFrame');
-
 const rsvpOptions = $$('.opt',rsvpForm);
-
-
-/* Connect form to Google Apps Script */
-
-rsvpForm.action = RSVP_URL;
-
 
 /* =========================================================
    YES / NO SELECTION
    ========================================================= */
 
 rsvpOptions.forEach(option => {
-
     option.addEventListener('click', () => {
-
-        rsvpOptions.forEach(item => {
-            item.classList.remove('on');
-        });
-
+        rsvpOptions.forEach(item => item.classList.remove('on'));
         option.classList.add('on');
-
         attendance.value = option.dataset.value;
-
         rsvpError.classList.remove('show');
-
     });
-
-
     option.addEventListener('keydown', e => {
-
-        if(
-            e.key === 'Enter' ||
-            e.key === ' '
-        ){
-
+        if(e.key === 'Enter' || e.key === ' '){
             e.preventDefault();
-
             option.click();
-
         }
-
     });
-
 });
-
 
 /* =========================================================
    RSVP SUBMISSION
    ========================================================= */
 
-let rsvpSubmitted = false;
+let rsvpSending = false;
 
+function showRsvpError(msg){
+    rsvpError.textContent = msg;
+    rsvpError.classList.add('show');
+}
 
-rsvpForm.addEventListener('submit', function(e){
+rsvpForm.addEventListener('submit', async function(e){
 
+    e.preventDefault();
     rsvpError.classList.remove('show');
 
+    if(rsvpSending) return;
 
     if(!rsvpName.value.trim()){
-
-        e.preventDefault();
-
-        rsvpError.textContent =
-            'Please enter your full name.';
-
-        rsvpError.classList.add('show');
-
+        showRsvpError('Please enter your full name.');
         rsvpName.focus();
-
         return;
-
     }
-
 
     if(!attendance.value){
-
-        e.preventDefault();
-
-        rsvpError.textContent =
-            'Please select Yes or No.';
-
-        rsvpError.classList.add('show');
-
+        showRsvpError('Please select Yes or No.');
         return;
-
     }
 
-
-    if(rsvpSubmitted){
-
-        e.preventDefault();
-
+    if(!/^https:\/\/script\.google\.com\/macros\/s\/[^\s]+\/exec$/.test(RSVP_URL)){
+        showRsvpError('RSVP is not available right now. Please contact us directly.');
         return;
-
     }
 
-
-    rsvpSubmitted = true;
-
+    rsvpSending = true;
     rsvpButton.disabled = true;
+    rsvpButton.textContent = 'Sending...';
 
-    rsvpButton.textContent =
-        'Sending...';
+    const body = new URLSearchParams({
+        name: rsvpName.value.trim(),
+        attendance: attendance.value,
+        message: rsvpMessage.value.trim()
+    });
 
-});
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 15000);
 
+    try{
 
-/* =========================================================
-   GOOGLE RESPONSE
-   ========================================================= */
-
-rsvpFrame.addEventListener('load', function(){
-
-    if(!rsvpSubmitted)
-        return;
-
-
-    setTimeout(() => {
-
-        rsvpSuccess.classList.add('show');
-
-        rsvpButton.textContent =
-            '✓ Confirmed';
-
-        rsvpButton.disabled = true;
-
-
-        rsvpName.value = '';
-        rsvpEmail.value = '';
-        rsvpMessage.value = '';
-        attendance.value = '';
-
-
-        rsvpOptions.forEach(option => {
-            option.classList.remove('on');
+        /* no-cors + urlencoded = simple request (no preflight),
+           works with Google Apps Script web apps */
+        await fetch(RSVP_URL,{
+            method:'POST',
+            mode:'no-cors',
+            headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
+            body:body.toString(),
+            signal:ctrl.signal
         });
 
+        clearTimeout(timer);
+
+        rsvpSuccess.classList.add('show');
+        rsvpButton.textContent = '✓ Confirmed';
+        rsvpName.value = '';
+        rsvpMessage.value = '';
+        attendance.value = '';
+        rsvpOptions.forEach(o => o.classList.remove('on'));
 
         setTimeout(() => {
-
             rsvpButton.disabled = false;
-
-            rsvpButton.textContent =
-                'Confirm RSVP';
-
+            rsvpButton.textContent = 'Confirm RSVP';
             rsvpSuccess.classList.remove('show');
-
-            rsvpSubmitted = false;
-
+            rsvpSending = false;
         },5000);
 
+    }catch(err){
 
-    },500);
+        clearTimeout(timer);
+        showRsvpError('Could not send your RSVP. Please check your connection and try again.');
+        rsvpButton.disabled = false;
+        rsvpButton.textContent = 'Confirm RSVP';
+        rsvpSending = false;
+
+    }
 
 });
 
